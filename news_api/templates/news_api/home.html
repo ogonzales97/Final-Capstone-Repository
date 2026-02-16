@@ -1,0 +1,76 @@
+{% extends "news_api/base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <h1 class="display-5">Latest Approved News</h1>
+        <hr>
+    </div>
+</div>
+
+<div class="row" id="article-container">
+    <div class="text-center">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p>Fetching latest news...</p>
+    </div>
+</div>
+
+<script>
+    async function loadArticles() {
+        try {
+            const response = await fetch('/api/articles/');
+            const articles = await response.json();
+            const container = document.getElementById('article-container');
+            container.innerHTML = ''; // Clear spinner
+
+            if (articles.length === 0) {
+                container.innerHTML = '<p class="text-center">No articles available.</p>';
+                return;
+            }
+
+            articles.forEach(article => {
+                // 1. Logic for Approval Status
+                const isPending = !article.is_approved;
+                const statusBadge = isPending 
+                    ? '<span class="badge bg-warning text-dark mb-2">PENDING APPROVAL</span>' 
+                    : '';
+                const borderClass = isPending ? 'border-warning' : '';
+
+                // 2. Logic for Content Type (The Newsletter Badge)
+                // We check the content_type field from your model
+                const isNewsletter = article.content_type === 'newsletter';
+                const typeBadge = isNewsletter
+                    ? '<span class="badge bg-info text-dark mb-2 ms-1">NEWSLETTER</span>'
+                    : '<span class="badge bg-light text-dark border mb-2 ms-1">ARTICLE</span>';
+
+                const card = `
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100 shadow-sm ${borderClass}">
+                            <div class="card-body">
+                                <div class="mb-2">
+                                    ${statusBadge}
+                                    ${typeBadge}
+                                </div>
+                                <h5 class="card-title">${article.title}</h5>
+                                <h6 class="card-subtitle mb-2 text-muted">By ${article.author_name} | ${article.publisher_name}</h6>
+                                <p class="card-text text-truncate">${article.content}</p>
+                                <a href="/article/${article.id}/" class="btn btn-primary btn-sm">Read More</a>
+                            </div>
+                            <div class="card-footer text-muted small">
+                                ${article.published_at
+                                    ? `Published on ${new Date(article.published_at).toLocaleDateString()}`
+                                    : `Draft created on ${new Date(article.created_at).toLocaleDateString()}`}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += card;
+            });
+        } catch (error) {
+            console.error('Error fetching articles:', error);
+        }
+    }
+
+    loadArticles();
+</script>
+{% endblock %}

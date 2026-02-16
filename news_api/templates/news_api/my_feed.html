@@ -1,0 +1,100 @@
+{% extends "news_api/base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <h1 class="display-5">My Personalized Feed</h1>
+        <p class="text-muted">Stories from the publishers you follow.</p>
+        <hr>
+    </div>
+</div>
+
+<div class="row" id="feed-container">
+    <div class="text-center">
+        <div class="spinner-border text-primary" role="status"></div>
+    </div>
+</div>
+
+<script>
+    async function loadMyFeed() {
+        const container = document.getElementById('feed-container');
+        try {
+            // Get subscriptions
+            const subRes = await fetch('/api/subscriptions/');
+            const subs = await subRes.json();
+            
+            // Map publishers to their subscription IDs so they can be deleted later
+            const subMap = {};
+            subs.forEach(s => {
+                const pId = (s.publisher && typeof s.publisher === 'object') ? s.publisher.id : s.publisher;
+                subMap[Number(pId)] = s.id; 
+            });
+    
+            const followedIds = Object.keys(subMap).map(Number);
+    
+            // 2. Get articles
+            const artRes = await fetch('/api/articles/');
+            const articles = await artRes.json();
+            
+            const myArticles = articles.filter(a => {
+                const articlePubId = (a.publisher && typeof a.publisher === 'object') ? a.publisher.id : a.publisher;
+                return a.is_approved && followedIds.includes(Number(articlePubId));
+            });
+    
+            container.innerHTML = '';
+    
+            if (myArticles.length === 0) {
+                container.innerHTML = '<div class="col-12 text-center mt-5"><h3>Your feed is empty!</h3><a href="/" class="btn btn-primary mt-3">Find Publishers</a></div>';
+                return;
+            }
+    
+            myArticles.forEach(article => {
+                const articlePubId = (article.publisher && typeof article.publisher === 'object') ? article.publisher.id : article.publisher;
+                const subscriptionId = subMap[Number(articlePubId)];
+    
+                container.innerHTML += `
+                    <div class="col-md-6 mb-4" id="card-${subscriptionId}">
+                        <div class="card h-100 shadow-sm border-0">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="badge bg-secondary">${article.publisher_name}</span>
+                                    <button class="btn btn-link text-danger p-0 btn-sm" onclick="unsubscribe(${subscriptionId})">Unsubscribe</button>
+                                </div>
+                                <h5 class="card-title">${article.title}</h5>
+                                <p class="card-text text-muted">${article.content.substring(0, 100)}...</p>
+                                <a href="/article/${article.id}/" class="btn btn-primary btn-sm">Read Full Story</a>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+        } catch (error) {
+            console.error('Feed Error:', error);
+        }
+    }
+    
+    // Unsubscribe Function
+    async function unsubscribe(subId) {
+        if (!confirm("Are you sure you want to stop following this publisher?")) return;
+    
+        try {
+            const res = await fetch(`/api/subscriptions/${subId}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            });
+    
+            if (res.ok) {
+                // Refresh the feed to show the changes
+                loadMyFeed();
+            } else {
+                alert("Failed to unsubscribe.");
+            }
+        } catch (err) {
+            console.error("Delete error:", err);
+        }
+    }
+    
+    loadMyFeed();
+    </script>
+{% endblock %}

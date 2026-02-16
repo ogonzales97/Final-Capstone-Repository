@@ -1,0 +1,70 @@
+{% extends "news_api/base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>My Submissions</h2>
+        <a href="{% url 'create-article' %}" class="btn btn-success">+ Submit New Story</a>
+    </div>
+
+    <div id="my-stories-list" class="row">
+        </div>
+</div>
+
+<script>
+    async function loadMyStories() {
+        const currentUserId = {{ user.id }};
+        const response = await fetch('/api/articles/');
+        const articles = await response.json();
+        
+        // FILTER: Only show stories belonging to THIS journalist
+        const myStories = articles.filter(a => a.author === currentUserId);
+        
+        const container = document.getElementById('my-stories-list');
+        container.innerHTML = myStories.length ? '' : '<p class="text-muted ms-3">You haven\'t submitted any stories yet.</p>';
+
+        myStories.forEach(article => {
+            // Logic for status badge
+            const statusBadge = article.is_approved 
+                ? '<span class="badge bg-success">Live</span>' 
+                : '<span class="badge bg-warning text-dark">Pending Review</span>';
+
+            container.innerHTML += `
+                <div class="col-12 mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-body d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1">${article.title} ${statusBadge}</h5>
+                                <small class="text-muted">Type: ${article.content_type.toUpperCase()} | Posted on: ${new Date(article.created_at).toLocaleDateString()}</small>
+                            </div>
+                            <div class="btn-group">
+                                <a href="/edit-article/${article.id}/" class="btn btn-outline-primary btn-sm">Edit</a>
+                                <button onclick="deleteStory(${article.id})" class="btn btn-outline-danger btn-sm">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    async function deleteStory(id) {
+        if (!confirm("Are you sure you want to delete your story? This cannot be undone.")) return;
+
+        const response = await fetch(`/api/articles/${id}/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        });
+
+        if (response.ok) {
+            loadMyStories();
+        } else {
+            alert("Error: Could not delete story.");
+        }
+    }
+
+    loadMyStories();
+</script>
+{% endblock %}

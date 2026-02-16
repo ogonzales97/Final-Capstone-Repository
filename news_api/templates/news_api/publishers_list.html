@@ -1,0 +1,63 @@
+{% extends "news_api/base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1>Discover Publishers</h1>
+        <p class="text-muted">Find news organizations to follow.</p>
+        <hr>
+    </div>
+</div>
+
+<div class="row" id="publishers-container">
+    </div>
+
+<script>
+async function loadPublishers() {
+    const container = document.getElementById('publishers-container');
+    try {
+        // Get all publishers
+        const pubRes = await fetch('/api/publishers/');
+        const publishers = await pubRes.json();
+
+        // Get current subscriptions to see who we already follow
+        const subRes = await fetch('/api/subscriptions/');
+        const subs = await subRes.json();
+        const followedIds = subs.map(s => Number(s.publisher && s.publisher.id ? s.publisher.id : s.publisher));
+
+        container.innerHTML = '';
+
+        publishers.forEach(pub => {
+            const isSubbed = followedIds.includes(pub.id);
+            container.innerHTML += `
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">${pub.name}</h5>
+                            <button class="btn ${isSubbed ? 'btn-success' : 'btn-primary'} btn-sm" 
+                                    onclick="subscribeToPub(${pub.id}, this)"
+                                    ${isSubbed ? 'disabled' : ''}>
+                                ${isSubbed ? 'Following' : 'Subscribe'}
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+        });
+    } catch (e) { console.error(e); }
+}
+
+async function subscribeToPub(pubId, btn) {
+    const res = await fetch('/api/subscriptions/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+        body: JSON.stringify({ publisher: pubId })
+    });
+    if (res.ok) {
+        btn.className = 'btn btn-success btn-sm';
+        btn.innerHTML = 'Following';
+        btn.disabled = true;
+    }
+}
+loadPublishers();
+</script>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends "news_api/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h2 class="mb-4">Edit Story</h2>
+                    <form id="edit-form">
+                        <div class="mb-3">
+                            <label class="form-label">Headline</label>
+                            <input type="text" id="title" class="form-control" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Content Type</label>
+                            <select class="form-select" id="content_type">
+                                <option value="article">Article</option>
+                                <option value="newsletter">Newsletter</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Content</label>
+                            <textarea id="content" class="form-control" rows="10" required></textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <button type="button" onclick="window.history.back()" class="btn btn-secondary">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const articleId = "{{ pk }}";
+
+    // Fetch current data to fill the form
+    async function loadArticleData() {
+        const res = await fetch(`/api/articles/${articleId}/`);
+        const data = await res.json();
+        
+        document.getElementById('title').value = data.title;
+        document.getElementById('content').value = data.content;
+        document.getElementById('content_type').value = data.content_type;
+    }
+
+    // Handle the Update
+    document.getElementById('edit-form').onsubmit = async (e) => {
+        e.preventDefault();
+        
+        const payload = {
+            title: document.getElementById('title').value,
+            content: document.getElementById('content').value,
+            content_type: document.getElementById('content_type').value
+        };
+
+        const response = await fetch(`/api/articles/${articleId}/`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+            alert("Changes saved successfully!");
+            const isEditor = {{ request.user.is_editor|yesno:"true,false" }};
+            console.log("Is Editor:", isEditor);
+            if (isEditor === true) {
+                window.location.href = "{% url 'editor-dashboard' %}";
+            } else {
+                window.location.href = "{% url 'my-stories' %}";
+            }
+        } else {
+            const errorData = await response.json();
+            console.error("Server Error:", errorData);
+            alert("Error updating article.");
+        }
+    };
+
+    loadArticleData();
+</script>
+{% endblock %}
