@@ -1,14 +1,38 @@
 """Admin configuration for the news_api app."""
+
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import User, Publisher, Article, Subscription
 
 
 class CustomUserAdmin(UserAdmin):
-    """Custom admin interface for the User model."""
+    """
+    Custom admin interface for the User model.
+    This admin class extends the default UserAdmin to include additional
+    fields for managing user roles and subscriptions directly from the
+    admin interface.
+    """
+
     fieldsets = UserAdmin.fieldsets + (
-        ('Roles', {'fields': ('is_reader', 'is_journalist', 'is_editor',)}),
-        ('Subscriptions', {'fields': ('subscribed_publishers', 'subscribed_journalists',)}),
+        (
+            "Roles",
+            {
+                "fields": (
+                    "is_reader",
+                    "is_journalist",
+                    "is_editor",
+                )
+            },
+        ),
+        (
+            "Subscriptions",
+            {
+                "fields": (
+                    "subscribed_publishers",
+                    "subscribed_journalists",
+                )
+            },
+        ),
     )
 
 

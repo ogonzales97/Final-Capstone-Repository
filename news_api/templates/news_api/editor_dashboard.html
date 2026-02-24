@@ -2,8 +2,13 @@
 
 {% block content %}
 <div class="container">
-    <h2 class="mb-4">Editor Control Center</h2>
-    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Editor Dashboard</h2>
+        <a href="{% url 'add-publisher' %}" class="btn btn-primary shadow-sm">
+            <strong>+ Add Publisher</strong>
+        </a>
+    </div>
+
     <h4 class="text-warning">Pending Approval</h4>
     <div id="pending-list" class="row mb-5"></div>
 
@@ -17,11 +22,11 @@
     async function loadDashboard() {
         const response = await fetch('/api/articles/');
         const articles = await response.json();
-        
+
         // Split data into two buckets
         const pending = articles.filter(a => !a.is_approved);
         const published = articles.filter(a => a.is_approved);
-        
+
         renderList(pending, 'pending-list', true);    // true = show Approve button
         renderList(published, 'published-list', false); // false = hide Approve button
     }
@@ -31,8 +36,8 @@
         container.innerHTML = items.length ? '' : '<p class="text-muted ms-3">No content in this category.</p>';
 
         items.forEach(article => {
-            const approveBtn = showApprove 
-                ? `<button onclick="approveArticle(${article.id})" class="btn btn-success">Approve</button>` 
+            const approveBtn = showApprove
+                ? `<button onclick="approveArticle(${article.id})" class="btn btn-success">Approve</button>`
                 : '';
 
             container.innerHTML += `

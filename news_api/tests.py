@@ -1,4 +1,5 @@
 """Tests for the News API application."""
+
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
@@ -11,11 +12,17 @@ User = get_user_model()
 
 
 class ArticleWorkflowTest(TestCase):
-    """Test case for the article workflow, ensuring correct handling of journalist and editor actions."""
+    """Test case for the article workflow,
+    ensuring correct handling of journalist and editor actions."""
+
     def setUp(self):
         # Create Users
-        self.journalist = User.objects.create_user(username='writer', password='password', is_journalist=True)
-        self.editor = User.objects.create_user(username='boss', password='password', is_editor=True)
+        self.journalist = User.objects.create_user(
+            username="writer", password="password", is_journalist=True
+        )
+        self.editor = User.objects.create_user(
+            username="boss", password="password", is_editor=True
+        )
 
         # Create Publisher
         self.publisher = Publisher.objects.create(name="Tech Daily")
@@ -26,7 +33,7 @@ class ArticleWorkflowTest(TestCase):
             content="Details inside...",
             author=self.journalist,
             publisher=self.publisher,
-            is_approved=False  # Starts as draft
+            is_approved=False,  # Starts as draft
         )
 
     def test_journalist_reader_is_none(self):
@@ -63,9 +70,10 @@ class ArticleWorkflowTest(TestCase):
 
 class ArticleAPITests(APITestCase):
     """Test case for the Article API endpoints."""
+
     def test_get_articles(self):
         """Test that the articles endpoint returns a successful response."""
-        url = reverse('article-list')
+        url = reverse("article-list")
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         print("TEST PASSED: GET /api/articles/ returned 200 OK.")

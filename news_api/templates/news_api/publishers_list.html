@@ -9,55 +9,87 @@
     </div>
 </div>
 
-<div class="row" id="publishers-container">
-    </div>
+<div class="row" id="publishers-container"></div>
 
 <script>
-async function loadPublishers() {
-    const container = document.getElementById('publishers-container');
-    try {
-        // Get all publishers
-        const pubRes = await fetch('/api/publishers/');
-        const publishers = await pubRes.json();
+    // Pass the user's role status from Django to JavaScript
+    const userIsEditor = {{ user.is_editor|yesno:"true,false" }};
+    const userIsReader = {{ user.is_reader|yesno:"true,false" }};
 
-        // Get current subscriptions to see who we already follow
-        const subRes = await fetch('/api/subscriptions/');
-        const subs = await subRes.json();
-        const followedIds = subs.map(s => Number(s.publisher && s.publisher.id ? s.publisher.id : s.publisher));
+    async function loadPublishers() {
+        const container = document.getElementById('publishers-container');
+        try {
+            const pubRes = await fetch('/api/publishers/');
+            const publishers = await pubRes.json();
 
-        container.innerHTML = '';
+            const subRes = await fetch('/api/subscriptions/');
+            const subs = await subRes.json();
+            const followedIds = subs.map(s => Number(s.publisher && s.publisher.id ? s.publisher.id : s.publisher));
 
-        publishers.forEach(pub => {
-            const isSubbed = followedIds.includes(pub.id);
-            container.innerHTML += `
+            container.innerHTML = '';
+
+            publishers.forEach(pub => {
+                const isSubbed = followedIds.includes(pub.id);
+
+                // Generate the Subscribe button only if the user is a Reader
+                const subscribeBtn = userIsReader
+                    ? `<button class="btn ${isSubbed ? 'btn-success' : 'btn-primary'} btn-sm" 
+                                onclick="subscribeToPub(${pub.id}, this)"
+                                ${isSubbed ? 'disabled' : ''}>
+                            ${isSubbed ? 'Following' : 'Subscribe'}
+                        </button>`
+                    : '';
+
+                // Generate the Delete button only if the user is an Editor
+                const deleteBtn = userIsEditor
+                    ? `<button class="btn btn-outline-danger btn-sm mt-2" onclick="deletePublisher(${pub.id})">Delete</button>`
+                    : '';
+
+                container.innerHTML += `
                 <div class="col-md-4 mb-4">
                     <div class="card shadow-sm">
                         <div class="card-body text-center">
                             <h5 class="card-title">${pub.name}</h5>
-                            <button class="btn ${isSubbed ? 'btn-success' : 'btn-primary'} btn-sm" 
-                                    onclick="subscribeToPub(${pub.id}, this)"
-                                    ${isSubbed ? 'disabled' : ''}>
-                                ${isSubbed ? 'Following' : 'Subscribe'}
-                            </button>
+                            <div class="d-grid gap-2">
+                                ${subscribeBtn}
+                                ${deleteBtn}
+                            </div>
                         </div>
                     </div>
                 </div>`;
-        });
-    } catch (e) { console.error(e); }
-}
-
-async function subscribeToPub(pubId, btn) {
-    const res = await fetch('/api/subscriptions/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
-        body: JSON.stringify({ publisher: pubId })
-    });
-    if (res.ok) {
-        btn.className = 'btn btn-success btn-sm';
-        btn.innerHTML = 'Following';
-        btn.disabled = true;
+            });
+        } catch (e) { console.error(e); }
     }
-}
-loadPublishers();
+
+    async function subscribeToPub(pubId, btn) {
+        const res = await fetch('/api/subscriptions/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+            body: JSON.stringify({ publisher: pubId })
+        });
+        if (res.ok) {
+            btn.className = 'btn btn-success btn-sm';
+            btn.innerHTML = 'Following';
+            btn.disabled = true;
+        }
+    }
+
+    // Function to delete publishers
+    async function deletePublisher(id) {
+        if (!confirm("Are you sure? This will remove this publisher from the system. Warning: If articles are linked to this publisher, the delete might fail.")) return;
+
+        const res = await fetch(`/api/publishers/${id}/`, {
+            method: 'DELETE',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+        });
+
+        if (res.ok) {
+            loadPublishers(); // Refresh the list without reloading the page
+        } else {
+            alert("Error: Could not delete publisher. Ensure no articles are currently assigned to them.");
+        }
+    }
+
+    loadPublishers();
 </script>
 {% endblock %}

@@ -15,6 +15,8 @@
 </div>
 
 <script>
+    const userIsReader = {{ user.is_reader|yesno:"true,false" }};
+
     async function loadArticleDetail() {
         const id = "{{ article_id }}";  // Get the article ID passed from the view
 
@@ -23,7 +25,7 @@
             const response = await fetch(`/api/articles/${id}/`);
             if (!response.ok) throw new Error('Article not found');
             const article = await response.json();
-            
+
             // Fetch User Subscriptions
             let isSubscribed = false;
             const subCheckRes = await fetch('/api/subscriptions/');
@@ -37,6 +39,16 @@
             const container = document.getElementById('article-detail');
             const pId = (article.publisher && typeof article.publisher === 'object') ? article.publisher.id : article.publisher;
 
+            // Only show subscribe button if user is a reader
+            const subscribeButton = userIsReader ? `
+                <button id="subscribe-btn" 
+                    class="btn ${isSubscribed ? 'btn-success' : 'btn-outline-primary'} btn-sm" 
+                    data-publisher="${pId}" 
+                    ${isSubscribed ? 'disabled' : ''}>
+                     ${isSubscribed ? 'Already Subscribed' : 'Subscribe to ' + article.publisher_name}
+                </button>
+            ` : '';
+
             // Render HTML with the correct button state
             container.innerHTML = `
                 <h1 class="display-4 mb-3">${article.title}</h1>
@@ -44,40 +56,35 @@
                     <div>
                         <span class="text-muted">By <strong>${article.author_name}</strong></span>
                         <span class="mx-2">|</span>
-                        <span class="text-muted">Publisher: <strong>${article.publisher_name}</strong></span>
+                        <span class="text-muted">Publisher: <strong>${article.publisher_name || 'Independent'}</strong></span>
                     </div>
-                    {% if user.is_authenticated %}
-                    <button id="subscribe-btn" 
-                        class="btn ${isSubscribed ? 'btn-success' : 'btn-outline-primary'} btn-sm" 
-                        data-publisher="${pId}" 
-                        ${isSubscribed ? 'disabled' : ''}>
-                         ${isSubscribed ? 'Already Subscribed' : 'Subscribe to ' + article.publisher_name}
-                    </button>
-                    {% endif %}
+                    ${subscribeButton}
                 </div>
                 <div class="lead" style="white-space: pre-wrap;">${article.content}</div>
             `;
 
             // Keep the click logic as a backup
-            const subBtn = document.getElementById('subscribe-btn');
-            if (subBtn && !isSubscribed) {
-                subBtn.onclick = async () => {
-                    const pubId = subBtn.getAttribute('data-publisher');
-                    const subRes = await fetch('/api/subscriptions/', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': '{{ csrf_token }}'
-                        },
-                        body: JSON.stringify({ publisher: parseInt(pubId) })
-                    });
+            if (userIsReader) {
+                const subBtn = document.getElementById('subscribe-btn');
+                if (subBtn && !isSubscribed) {
+                    subBtn.onclick = async () => {
+                        const pubId = subBtn.getAttribute('data-publisher');
+                        const subRes = await fetch('/api/subscriptions/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': '{{ csrf_token }}'
+                            },
+                            body: JSON.stringify({ publisher: parseInt(pubId) })
+                        });
 
-                    if (subRes.ok || subRes.status === 400) {
-                        subBtn.className = 'btn btn-success btn-sm';
-                        subBtn.innerHTML = 'Subscribed';
-                        subBtn.disabled = true;
-                    }
-                };
+                        if (subRes.ok || subRes.status === 400) {
+                            subBtn.className = 'btn btn-success btn-sm';
+                            subBtn.innerHTML = 'Subscribed';
+                            subBtn.disabled = true;
+                        }
+                    };
+                }
             }
         } catch (error) {
             console.error("Load error:", error);

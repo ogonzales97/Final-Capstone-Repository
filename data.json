@@ -1,0 +1,576 @@
+[
+{
+    "model": "admin.logentry",
+    "pk": 1,
+    "fields": {
+        "action_time": "2026-02-15T19:44:03.155Z",
+        "user": 1,
+        "content_type": 7,
+        "object_id": "1",
+        "object_repr": "BCH",
+        "action_flag": 1,
+        "change_message": "[{\"added\": {}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 2,
+    "fields": {
+        "action_time": "2026-02-15T19:46:37.891Z",
+        "user": 1,
+        "content_type": 9,
+        "object_id": "2",
+        "object_repr": "Journalist",
+        "action_flag": 1,
+        "change_message": "[{\"added\": {}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 3,
+    "fields": {
+        "action_time": "2026-02-15T19:47:20.670Z",
+        "user": 1,
+        "content_type": 9,
+        "object_id": "2",
+        "object_repr": "Journalist",
+        "action_flag": 2,
+        "change_message": "[{\"changed\": {\"fields\": [\"Is journalist\"]}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 4,
+    "fields": {
+        "action_time": "2026-02-15T19:50:25.566Z",
+        "user": 1,
+        "content_type": 9,
+        "object_id": "3",
+        "object_repr": "Journalist2",
+        "action_flag": 1,
+        "change_message": "[{\"added\": {}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 5,
+    "fields": {
+        "action_time": "2026-02-15T19:50:38.323Z",
+        "user": 1,
+        "content_type": 9,
+        "object_id": "3",
+        "object_repr": "Journalist2",
+        "action_flag": 2,
+        "change_message": "[{\"changed\": {\"fields\": [\"Is journalist\"]}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 6,
+    "fields": {
+        "action_time": "2026-02-15T21:02:47.234Z",
+        "user": 1,
+        "content_type": 9,
+        "object_id": "4",
+        "object_repr": "Editor",
+        "action_flag": 1,
+        "change_message": "[{\"added\": {}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 7,
+    "fields": {
+        "action_time": "2026-02-15T21:03:05.968Z",
+        "user": 1,
+        "content_type": 9,
+        "object_id": "5",
+        "object_repr": "Reader",
+        "action_flag": 1,
+        "change_message": "[{\"added\": {}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 8,
+    "fields": {
+        "action_time": "2026-02-15T21:03:11.805Z",
+        "user": 1,
+        "content_type": 9,
+        "object_id": "5",
+        "object_repr": "Reader",
+        "action_flag": 2,
+        "change_message": "[{\"changed\": {\"fields\": [\"Is reader\"]}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 9,
+    "fields": {
+        "action_time": "2026-02-15T21:03:36.138Z",
+        "user": 1,
+        "content_type": 9,
+        "object_id": "6",
+        "object_repr": "Reader2",
+        "action_flag": 1,
+        "change_message": "[{\"added\": {}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 10,
+    "fields": {
+        "action_time": "2026-02-15T21:03:45.456Z",
+        "user": 1,
+        "content_type": 9,
+        "object_id": "6",
+        "object_repr": "Reader2",
+        "action_flag": 3,
+        "change_message": ""
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 11,
+    "fields": {
+        "action_time": "2026-02-15T21:28:09.819Z",
+        "user": 1,
+        "content_type": 9,
+        "object_id": "4",
+        "object_repr": "Editor",
+        "action_flag": 2,
+        "change_message": "[{\"changed\": {\"fields\": [\"Is editor\"]}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 12,
+    "fields": {
+        "action_time": "2026-02-16T11:39:55.475Z",
+        "user": 1,
+        "content_type": 9,
+        "object_id": "4",
+        "object_repr": "Editor",
+        "action_flag": 2,
+        "change_message": "[]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 13,
+    "fields": {
+        "action_time": "2026-02-22T21:24:07.764Z",
+        "user": 1,
+        "content_type": 9,
+        "object_id": "4",
+        "object_repr": "Editor",
+        "action_flag": 2,
+        "change_message": "[{\"changed\": {\"fields\": [\"Email address\"]}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 14,
+    "fields": {
+        "action_time": "2026-02-22T21:28:22.114Z",
+        "user": 1,
+        "content_type": 9,
+        "object_id": "5",
+        "object_repr": "Reader",
+        "action_flag": 2,
+        "change_message": "[{\"changed\": {\"fields\": [\"Email address\"]}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 15,
+    "fields": {
+        "action_time": "2026-02-23T14:05:24.363Z",
+        "user": 1,
+        "content_type": 9,
+        "object_id": "2",
+        "object_repr": "Journalist",
+        "action_flag": 2,
+        "change_message": "[{\"changed\": {\"fields\": [\"Email address\"]}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 16,
+    "fields": {
+        "action_time": "2026-02-23T14:05:48.384Z",
+        "user": 1,
+        "content_type": 9,
+        "object_id": "3",
+        "object_repr": "Journalist2",
+        "action_flag": 2,
+        "change_message": "[{\"changed\": {\"fields\": [\"Email address\"]}}]"
+    }
+},
+{
+    "model": "sessions.session",
+    "pk": "aze2djcwi5mvymtmor6n9fx43i28a6mf",
+    "fields": {
+        "session_data": ".eJxVjEEOwiAQRe_C2hCgQ6Eu3XsGMsNMbdVAUtqV8e7apAvd_vfef6mE2zqlrcmSZlZnBer0uxHmh5Qd8B3Lrepcy7rMpHdFH7Tpa2V5Xg7372DCNn1rNzgIjvsIVqJ4AAHLQYwDIXCjWJNjiCgdscmWxpzRY0feMfWDHUC9P9QPN_o:1vrxZj:Zc38dpuzg9yZiCU_NxtLyjW7h-8vNnQm1gnfa54sFMk",
+        "expire_date": "2026-03-02T12:19:39.070Z"
+    }
+},
+{
+    "model": "news_api.user",
+    "pk": 1,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$fy3CPENX93K2QYZXD7hbI0$1DCWsM8ad9am5Rmyy8ffBraDFH4RpcxB8kILhuRZnRg=",
+        "last_login": "2026-02-23T14:04:58.535Z",
+        "is_superuser": true,
+        "username": "admin",
+        "first_name": "",
+        "last_name": "",
+        "email": "cppjrke2013@gmail.com",
+        "is_staff": true,
+        "is_active": true,
+        "date_joined": "2026-02-15T19:34:21.843Z",
+        "is_reader": false,
+        "is_journalist": false,
+        "is_editor": false,
+        "groups": [],
+        "user_permissions": [],
+        "subscribed_publishers": [],
+        "subscribed_journalists": []
+    }
+},
+{
+    "model": "news_api.user",
+    "pk": 2,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$q07ROcHhvqkH3m0w52gsu4$7n9eZcdqIv5qqxi2x4B5Bekt/Z1HSHSBnO6DDtHfUvo=",
+        "last_login": "2026-02-23T15:16:43.788Z",
+        "is_superuser": false,
+        "username": "Journalist",
+        "first_name": "",
+        "last_name": "",
+        "email": "cppjrke2013@gmail.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-02-15T19:46:37Z",
+        "is_reader": false,
+        "is_journalist": true,
+        "is_editor": false,
+        "groups": [],
+        "user_permissions": [],
+        "subscribed_publishers": [],
+        "subscribed_journalists": []
+    }
+},
+{
+    "model": "news_api.user",
+    "pk": 3,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$GkfU8bMlQPf6DADuBr95o4$DSlxQoZ4XQUMsOXk/Oe1+bpVmJ1rMKAEF6/IczNFEVo=",
+        "last_login": "2026-02-19T20:45:56Z",
+        "is_superuser": false,
+        "username": "Journalist2",
+        "first_name": "",
+        "last_name": "",
+        "email": "cppjrke2013@gmail.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-02-15T19:50:25Z",
+        "is_reader": false,
+        "is_journalist": true,
+        "is_editor": false,
+        "groups": [],
+        "user_permissions": [],
+        "subscribed_publishers": [],
+        "subscribed_journalists": []
+    }
+},
+{
+    "model": "news_api.user",
+    "pk": 4,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$6Sw9314x1EWEI5TPWJdDKx$a85YE2XtL9kYNdxuz9MHMIzhlvLOKAdz+nGiwrenEGI=",
+        "last_login": "2026-02-23T15:15:11.061Z",
+        "is_superuser": false,
+        "username": "Editor",
+        "first_name": "",
+        "last_name": "",
+        "email": "cppjrke2013@gmail.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-02-15T21:02:46Z",
+        "is_reader": false,
+        "is_journalist": false,
+        "is_editor": true,
+        "groups": [],
+        "user_permissions": [],
+        "subscribed_publishers": [],
+        "subscribed_journalists": []
+    }
+},
+{
+    "model": "news_api.user",
+    "pk": 5,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$5SyKU3CwG6uXl5p3gYgMJI$EOVDEYVNn+EMMy0nNfCPWfQPI6hDDrtfmgrlQo072sw=",
+        "last_login": "2026-02-23T15:16:14.129Z",
+        "is_superuser": false,
+        "username": "Reader",
+        "first_name": "",
+        "last_name": "",
+        "email": "cppjrke2013@gmail.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-02-15T21:03:05Z",
+        "is_reader": true,
+        "is_journalist": false,
+        "is_editor": false,
+        "groups": [],
+        "user_permissions": [],
+        "subscribed_publishers": [],
+        "subscribed_journalists": []
+    }
+},
+{
+    "model": "news_api.user",
+    "pk": 7,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$rwbeCuKOIYuwbg0kVqinET$QQfetxJgMGO+8YjMt3m83yg8FaVqGxGWlSv0g7v/sko=",
+        "last_login": "2026-02-15T21:04:42.507Z",
+        "is_superuser": false,
+        "username": "Reader2",
+        "first_name": "",
+        "last_name": "",
+        "email": "cppjrke2013@gmail.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-02-15T21:04:42.193Z",
+        "is_reader": true,
+        "is_journalist": false,
+        "is_editor": false,
+        "groups": [],
+        "user_permissions": [],
+        "subscribed_publishers": [],
+        "subscribed_journalists": []
+    }
+},
+{
+    "model": "news_api.user",
+    "pk": 8,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$RQdLTTe4EDL6Nqi1CAHZWM$F0MU07NMm8EKhn8vaLbl56uqWwQeWKWXpj2R4cxwn6g=",
+        "last_login": "2026-02-20T15:25:36.789Z",
+        "is_superuser": false,
+        "username": "Journalist3",
+        "first_name": "",
+        "last_name": "",
+        "email": "cppjrke2013@gmail.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-02-19T20:44:17.608Z",
+        "is_reader": false,
+        "is_journalist": true,
+        "is_editor": false,
+        "groups": [],
+        "user_permissions": [],
+        "subscribed_publishers": [],
+        "subscribed_journalists": []
+    }
+},
+{
+    "model": "news_api.publisher",
+    "pk": 1,
+    "fields": {
+        "name": "BCH",
+        "editors": [],
+        "journalists": []
+    }
+},
+{
+    "model": "news_api.publisher",
+    "pk": 3,
+    "fields": {
+        "name": "New Test Publisher",
+        "editors": [],
+        "journalists": []
+    }
+},
+{
+    "model": "news_api.publisher",
+    "pk": 5,
+    "fields": {
+        "name": "The Daily Prophet",
+        "editors": [],
+        "journalists": []
+    }
+},
+{
+    "model": "news_api.article",
+    "pk": 1,
+    "fields": {
+        "content_type": "article",
+        "title": "Test Article",
+        "content": "Test article for Journalist user",
+        "author": 2,
+        "publisher": 1,
+        "published_at": "2026-02-15T21:28:45.540Z",
+        "reader": null,
+        "is_approved": true,
+        "created_at": "2026-02-15T21:05:22.749Z"
+    }
+},
+{
+    "model": "news_api.article",
+    "pk": 2,
+    "fields": {
+        "content_type": "newsletter",
+        "title": "Hey",
+        "content": "Hello test",
+        "author": 2,
+        "publisher": 1,
+        "published_at": "2026-02-22T21:20:39.029Z",
+        "reader": null,
+        "is_approved": true,
+        "created_at": "2026-02-15T21:05:34.447Z"
+    }
+},
+{
+    "model": "news_api.article",
+    "pk": 3,
+    "fields": {
+        "content_type": "newsletter",
+        "title": "2nd Test",
+        "content": "Testing...",
+        "author": 2,
+        "publisher": 1,
+        "published_at": "2026-02-22T21:24:27.875Z",
+        "reader": null,
+        "is_approved": true,
+        "created_at": "2026-02-15T21:05:51.916Z"
+    }
+},
+{
+    "model": "news_api.article",
+    "pk": 4,
+    "fields": {
+        "content_type": "article",
+        "title": "Journalist2 Submission",
+        "content": "Another test again.",
+        "author": 3,
+        "publisher": 1,
+        "published_at": null,
+        "reader": null,
+        "is_approved": false,
+        "created_at": "2026-02-15T21:06:32.798Z"
+    }
+},
+{
+    "model": "news_api.article",
+    "pk": 5,
+    "fields": {
+        "content_type": "article",
+        "title": "New",
+        "content": "Test article",
+        "author": 2,
+        "publisher": null,
+        "published_at": "2026-02-19T20:28:55.686Z",
+        "reader": null,
+        "is_approved": true,
+        "created_at": "2026-02-19T20:28:55.687Z"
+    }
+},
+{
+    "model": "news_api.article",
+    "pk": 6,
+    "fields": {
+        "content_type": "newsletter",
+        "title": "Test",
+        "content": "Newsletter",
+        "author": 2,
+        "publisher": null,
+        "published_at": "2026-02-20T15:23:54.631Z",
+        "reader": null,
+        "is_approved": true,
+        "created_at": "2026-02-20T15:23:54.632Z"
+    }
+},
+{
+    "model": "news_api.article",
+    "pk": 7,
+    "fields": {
+        "content_type": "article",
+        "title": "Test",
+        "content": "for new publisher",
+        "author": 8,
+        "publisher": null,
+        "published_at": "2026-02-20T15:26:33.729Z",
+        "reader": null,
+        "is_approved": true,
+        "created_at": "2026-02-20T15:25:54.230Z"
+    }
+},
+{
+    "model": "news_api.article",
+    "pk": 8,
+    "fields": {
+        "content_type": "article",
+        "title": "New",
+        "content": "Test article",
+        "author": 2,
+        "publisher": 1,
+        "published_at": "2026-02-22T21:29:31.312Z",
+        "reader": null,
+        "is_approved": true,
+        "created_at": "2026-02-22T21:28:53.626Z"
+    }
+},
+{
+    "model": "news_api.article",
+    "pk": 9,
+    "fields": {
+        "content_type": "article",
+        "title": "Title",
+        "content": "Test",
+        "author": 2,
+        "publisher": 1,
+        "published_at": "2026-02-23T15:15:16.021Z",
+        "reader": null,
+        "is_approved": true,
+        "created_at": "2026-02-23T14:06:28.542Z"
+    }
+},
+{
+    "model": "news_api.article",
+    "pk": 10,
+    "fields": {
+        "content_type": "article",
+        "title": "New",
+        "content": "Test",
+        "author": 2,
+        "publisher": 1,
+        "published_at": "2026-02-23T14:06:58.059Z",
+        "reader": null,
+        "is_approved": true,
+        "created_at": "2026-02-23T14:06:39.109Z"
+    }
+},
+{
+    "model": "news_api.subscription",
+    "pk": 2,
+    "fields": {
+        "user": 5,
+        "publisher": 5,
+        "journalist": null,
+        "created_at": "2026-02-20T15:45:01.369Z"
+    }
+},
+{
+    "model": "news_api.subscription",
+    "pk": 3,
+    "fields": {
+        "user": 5,
+        "publisher": 1,
+        "journalist": null,
+        "created_at": "2026-02-22T16:33:17.911Z"
+    }
+}
+]

@@ -10,14 +10,15 @@
                     {% csrf_token %}
                     <div class="mb-3">
                         <label class="form-label font-weight-bold">Headline</label>
-                        <input type="text" id="title" class="form-control form-control-lg" placeholder="Enter a catchy title..." required>
+                        <input type="text" id="title" class="form-control form-control-lg" placeholder="Enter a title..." required>
                     </div>
                     
                     <div class="mb-3">
                         <label class="form-label">Select Publisher</label>
-                        <select id="publisher" class="form-select" required>
-                            <option value="">Choose your organization</option>
+                        <select id="publisher" class="form-select">
+                            <option value="">Independent (No Publisher - Auto-Publish)</option>
                         </select>
+                        <small class="text-muted">Choosing 'Independent' publishes your story immediately without editor review.</small>
                     </div>
 
                     <div class="mb-3">
@@ -34,7 +35,7 @@
                     </div>
 
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-success btn-lg">Submit for Editor Review</button>
+                        <button type="submit" class="btn btn-success btn-lg">Publish Story</button>
                     </div>
                 </form>
                 <div id="response-msg" class="mt-3"></div>
@@ -44,7 +45,6 @@
 </div>
 
 <script>
-    // Fetch publishers to fill the dropdown
     async function getPublishers() {
         const res = await fetch('/api/publishers/');
         const data = await res.json();
@@ -54,16 +54,18 @@
         });
     }
 
-    // Handle the submission
     document.getElementById('article-form').onsubmit = async (e) => {
         e.preventDefault();
+        
+        // Get value and convert empty string to null
+        const pubValue = document.getElementById('publisher').value;
         
         const payload = {
             title: document.getElementById('title').value,
             content: document.getElementById('content').value,
-            publisher: document.getElementById('publisher').value,
+            publisher: pubValue === "" ? null : pubValue, // Sends null for Independent
             content_type: document.getElementById('content_type').value,
-            author: {{ user.id }} // Using Django template tag to get current user ID
+            author: {{ user.id }}
         };
 
         const response = await fetch('/api/articles/', {
@@ -77,7 +79,12 @@
 
         const msgDiv = document.getElementById('response-msg');
         if (response.ok) {
-            msgDiv.innerHTML = `<div class="alert alert-success">Success! Your article has been sent to the editors.</div>`;
+            // Success message
+            const successMsg = pubValue === "" ? 
+                "Success! Your story is now live (Independent)." : 
+                "Success! Your story has been sent to the editors.";
+            
+            msgDiv.innerHTML = `<div class="alert alert-success">${successMsg}</div>`;
             document.getElementById('article-form').reset();
         } else {
             const errorData = await response.json();

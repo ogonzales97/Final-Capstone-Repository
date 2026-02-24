@@ -37,7 +37,7 @@
                 const borderClass = isPending ? 'border-warning' : '';
 
                 // 2. Logic for Content Type (The Newsletter Badge)
-                // We check the content_type field from your model
+                // Check the content_type field from the model
                 const isNewsletter = article.content_type === 'newsletter';
                 const typeBadge = isNewsletter
                     ? '<span class="badge bg-info text-dark mb-2 ms-1">NEWSLETTER</span>'
@@ -52,7 +52,7 @@
                                     ${typeBadge}
                                 </div>
                                 <h5 class="card-title">${article.title}</h5>
-                                <h6 class="card-subtitle mb-2 text-muted">By ${article.author_name} | ${article.publisher_name}</h6>
+                                <h6 class="card-subtitle mb-2 text-muted">By ${article.author_name} | ${article.publisher_name || 'Independent'}</h6>
                                 <p class="card-text text-truncate">${article.content}</p>
                                 <a href="/article/${article.id}/" class="btn btn-primary btn-sm">Read More</a>
                             </div>
