@@ -8,9 +8,16 @@ from .models import User, Publisher, Article, Subscription
 class CustomUserAdmin(UserAdmin):
     """
     Custom admin interface for the User model.
-    This admin class extends the default UserAdmin to include additional
-    fields for managing user roles and subscriptions directly from the
-    admin interface.
+
+    Extends Django's default UserAdmin to include additional fields
+    for managing user roles (Reader, Journalist, Editor) and
+    subscriptions directly from the admin interface.
+    
+    :param fieldsets: Tuple of fieldset configurations for
+        the admin form
+    :type fieldsets: tuple
+    :return: Customized admin interface for User model
+    :rtype: django.contrib.admin.ModelAdmin
     """
 
     fieldsets = UserAdmin.fieldsets + (
