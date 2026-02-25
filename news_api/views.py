@@ -24,17 +24,13 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows users to be viewed or edited.
 
-    :param queryset: The default queryset returning all users
-        ordered by their join date.
+    :param queryset: All users ordered by join date
     :type queryset: QuerySet
-    :param serializer_class: The serializer used to parse
-        User data.
+    :param serializer_class: Serializer for User data
     :type serializer_class: UserSerializer
-    :param permission_classes: The permissions required to 
-    access this view.
+    :param permission_classes: Required permissions for this view
     :type permission_classes: list
     """
-
     queryset = User.objects.all().order_by("-date_joined")
     serializer_class = UserSerializer
     permission_classes = [permissions.AllowAny]
@@ -43,14 +39,12 @@ class UserViewSet(viewsets.ModelViewSet):
 class PublisherViewSet(viewsets.ModelViewSet):
     """
     API endpoint for viewing and editing publishers.
-    
-    :param queryset: The default queryset returning all publishers.
+
+    :param queryset: All publishers
     :type queryset: QuerySet
-    :param serializer_class: The serializer used to parse
-        Publisher data.
+    :param serializer_class: Serializer for Publisher data
     :type serializer_class: PublisherSerializer
     """
-
     queryset = Publisher.objects.all()
     serializer_class = PublisherSerializer
 
@@ -59,10 +53,9 @@ class ArticleViewSet(viewsets.ModelViewSet):
     """
     API endpoint for viewing and editing articles.
 
-    :param queryset: The default queryset returning all articles.
+    :param queryset: All articles
     :type queryset: QuerySet
-    :param serializer_class: The serializer used to parse
-        Article data.
+    :param serializer_class: Serializer for Article data
     :type serializer_class: ArticleSerializer
     """
 
@@ -71,13 +64,11 @@ class ArticleViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         """
-        Assign permissions dynamically based on the
-            action being taken.
+        Assign permissions dynamically based on the action being taken.
 
-        :param self: The instance of the ArticleViewSet.
+        :param self: The instance of the ArticleViewSet
         :type self: ArticleViewSet
-        :return: A list of permission instances required
-            for the current action.
+        :return: List of permission instances for the current action
         :rtype: list
         """
         if self.action == "create":
@@ -111,13 +102,13 @@ class ArticleViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         """
-        Handles article creation logic, bypassing approval
-            for independent journalists
+        Handles article creation logic, bypassing approval for
+        independent journalists.
 
         :param self: The instance of the ArticleViewSet.
         :type self: ArticleViewSet
-        :param serializer: The serializer instance containing
-            the validated article data.
+        :param serializer: The serializer instance containing the
+            validated article data.
         :type serializer: ArticleSerializer
         :return: None
         :rtype: None
@@ -242,8 +233,8 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         """
-        Handle subscription creation and prevent staff
-            from subscribing.
+        Handle subscription creation and prevent staff from
+        subscribing.
 
         :param self: The instance of the SubscriptionViewSet.
         :type self: SubscriptionViewSet
@@ -282,8 +273,8 @@ def article_detail_view(request, pk):
     :type request: django.http.HttpRequest
     :param pk: The primary key (ID) of the article to display.
     :type pk: int
-    :return: The rendered article detail template
-    with the article ID in context.
+    :return: The rendered article detail template with the article
+             ID in context.
     :rtype: django.http.HttpResponse
     """
     # Pass the 'pk' (article ID) to the template for client-side fetching
@@ -334,7 +325,7 @@ def logout_view(request):
 def create_article_view(request):
     """
     Render the article creation page for journalists.
-    
+
     :param request: The incoming HTTP request object.
     :type request: django.http.HttpRequest
     :return: The rendered article creation template.
@@ -361,8 +352,8 @@ def editor_dashboard_view(request):
 
 def my_feed_view(request):
     """
-    Render the personalized feed for readers
-    and clean up staff subscriptions.
+    Render the personalized feed for readers and clean up staff
+    subscriptions.
 
     :param request: The incoming HTTP request object.
     :type request: django.http.HttpRequest
