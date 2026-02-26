@@ -12,6 +12,20 @@ class User(AbstractUser):
     """
     Custom user model extending Django's AbstractUser
     to handle role-based access.
+
+    :param is_reader: Boolean indicating if the user is a Reader.
+    :type is_reader: bool
+    :param is_journalist: Boolean indicating if the user is a
+        Journalist.
+    :type is_journalist: bool
+    :param is_editor: Boolean indicating if the user is an Editor.
+    :type is_editor: bool
+    :param subscribed_publishers: Many-to-many relationship with 
+        Publisher model.
+    :type subscribed_publishers: QuerySet
+    :param subscribed_journalists: Many-to-many relationship with self
+        for following Journalists.
+    :type subscribed_journalists: QuerySet 
     """
 
     # Defining the roles
@@ -34,6 +48,11 @@ class User(AbstractUser):
         """
         Ensure a user doesn't have Reader subscriptions
         if they are a Journalist or Editor.
+
+        :param args: Variable length argument list.
+        :param kwargs: Arbitrary keyword arguments.
+        :return: None
+        :rtype: None
         """
         if self.is_journalist or self.is_editor:
             if self.pk:  # If the user already exists
@@ -45,6 +64,15 @@ class User(AbstractUser):
 class Publisher(models.Model):
     """
     Model representing a news publishing organization.
+
+    :param name: Name of the publisher.
+    :type name: str
+    :param editors: Many-to-many relationship with
+        User model for Editors.
+    :type editors: QuerySet
+    :param journalists: Many-to-many relationship with
+        User model for Journalists.
+    :type journalists: QuerySet
     """
 
     name = models.CharField(max_length=255)
@@ -61,12 +89,35 @@ class Publisher(models.Model):
     )
 
     def __str__(self):
+        """
+        Returns the string representation
+        of the Publisher instance.
+
+        :return: Name of the publisher.
+        :rtype: str
+        """
         return self.name
 
 
 class Article(models.Model):
     """
     Model representing a news article or newsletter.
+
+    :param content_type: Type of content (article or newsletter).
+    :type content_type: str
+    :param title: Title of the article.
+    :type title: str
+    :param content: Body of the article.
+    :type content: str
+    :param author: Foreign key to the User model for the author.
+    :type author: User
+    :param publisher: Foreign key to the Publisher model.
+    :type publisher: Publisher
+    :param published_at: Date and time when the article was published.
+    :type published_at: datetime
+    :param is_approved: Boolean indicating if the article
+        is approved by an editor.
+    :type is_approved: bool
     """
 
     CONTENT_TYPES = [
@@ -107,12 +158,32 @@ class Article(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
+        """
+        Returns the string representation of the 
+        Article instance.
+
+        :return: Title of the article.
+        :rtype: str
+        """
         return self.title
 
 
 class Subscription(models.Model):
-    """Model representing a subscription of a reader to a
-    publisher or journalist."""
+    """
+    Model representing a subscription of a reader to a
+    publisher or journalist.
+
+    :param user: Foreign key to the User model for the subscriber.
+    :type user: User
+    :param publisher: Foreign key to the Publisher model
+        for the subscription.
+    :type publisher: Publisher
+    :param journalist: Foreign key to the User model for the
+        journalist subscription.
+    :type journalist: User
+    :param created_at: Date and time when the subscription was created.
+    :type created_at: datetime
+    """
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -132,7 +203,9 @@ class Subscription(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        """Meta class to enforce unique subscriptions."""
+        """
+        Enforces unique constraints for subscriptions.
+        """
 
         # Ensure a user can't subscribe to the
         # same publisher or journalist multiple times
@@ -142,5 +215,12 @@ class Subscription(models.Model):
         ]
 
     def __str__(self):
+        """
+        Returns the string representation of the Subscription instance.
+
+        :return: String indicating the subscriber and the
+            publisher or journalist they are subscribed to.
+        :rtype: str
+        """
         pub_name = self.publisher.name if self.publisher else "No Publisher"
         return f"{self.user.username} -> {pub_name}"
