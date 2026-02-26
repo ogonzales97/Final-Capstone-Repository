@@ -9,7 +9,7 @@ class UserSerializer(serializers.ModelSerializer):
     Serializer for the User model.
 
     Converts User model instances to JSON format for API responses.
-    Includes role flags to identify user types 
+    Includes role flags to identify user types
     (reader, journalist, editor).
 
     :param model: The User model to serialize
