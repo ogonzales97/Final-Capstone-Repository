@@ -145,3 +145,5 @@ staticfiles/
 
 # Mac system files
 .DS_Store
+
+.env.docker
