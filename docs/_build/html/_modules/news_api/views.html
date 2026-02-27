@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>news_api.views &mdash; news-app 00.00.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=d7bb8d4d"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            news-app
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">news_api</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">news-app</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">news_api.views</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for news_api.views</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Views for the News API application.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.shortcuts</span><span class="w"> </span><span class="kn">import</span> <span class="n">render</span><span class="p">,</span> <span class="n">redirect</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.contrib.auth</span><span class="w"> </span><span class="kn">import</span> <span class="n">authenticate</span><span class="p">,</span> <span class="n">login</span><span class="p">,</span> <span class="n">logout</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.contrib</span><span class="w"> </span><span class="kn">import</span> <span class="n">messages</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">timezone</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.db.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Q</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.core.mail</span><span class="w"> </span><span class="kn">import</span> <span class="n">send_mail</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.conf</span><span class="w"> </span><span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rest_framework</span><span class="w"> </span><span class="kn">import</span> <span class="n">viewsets</span><span class="p">,</span> <span class="n">permissions</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rest_framework.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">PermissionDenied</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Article</span><span class="p">,</span> <span class="n">Publisher</span><span class="p">,</span> <span class="n">User</span><span class="p">,</span> <span class="n">Subscription</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.serializers</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ArticleSerializer</span><span class="p">,</span>
+    <span class="n">PublisherSerializer</span><span class="p">,</span>
+    <span class="n">UserSerializer</span><span class="p">,</span>
+    <span class="n">SubscriptionSerializer</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.permissions</span><span class="w"> </span><span class="kn">import</span> <span class="n">IsJournalist</span><span class="p">,</span> <span class="n">IsEditor</span><span class="p">,</span> <span class="n">IsAuthorOrReadOnly</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.forms</span><span class="w"> </span><span class="kn">import</span> <span class="n">SignUpForm</span>
+
+
+<div class="viewcode-block" id="UserViewSet">
+<a class="viewcode-back" href="../../news_api.html#news_api.views.UserViewSet">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">UserViewSet</span><span class="p">(</span><span class="n">viewsets</span><span class="o">.</span><span class="n">ModelViewSet</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    API endpoint that allows users to be viewed or edited.</span>
+
+<span class="sd">    :param queryset: All users ordered by join date</span>
+<span class="sd">    :type queryset: QuerySet</span>
+<span class="sd">    :param serializer_class: Serializer for User data</span>
+<span class="sd">    :type serializer_class: UserSerializer</span>
+<span class="sd">    :param permission_classes: Required permissions for this view</span>
+<span class="sd">    :type permission_classes: list</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">queryset</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">&quot;-date_joined&quot;</span><span class="p">)</span>
+    <span class="n">serializer_class</span> <span class="o">=</span> <span class="n">UserSerializer</span>
+    <span class="n">permission_classes</span> <span class="o">=</span> <span class="p">[</span><span class="n">permissions</span><span class="o">.</span><span class="n">AllowAny</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="PublisherViewSet">
+<a class="viewcode-back" href="../../news_api.html#news_api.views.PublisherViewSet">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PublisherViewSet</span><span class="p">(</span><span class="n">viewsets</span><span class="o">.</span><span class="n">ModelViewSet</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    API endpoint for viewing and editing publishers.</span>
+
+<span class="sd">    :param queryset: All publishers</span>
+<span class="sd">    :type queryset: QuerySet</span>
+<span class="sd">    :param serializer_class: Serializer for Publisher data</span>
+<span class="sd">    :type serializer_class: PublisherSerializer</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">queryset</span> <span class="o">=</span> <span class="n">Publisher</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="n">serializer_class</span> <span class="o">=</span> <span class="n">PublisherSerializer</span></div>
+
+
+
+<div class="viewcode-block" id="ArticleViewSet">
+<a class="viewcode-back" href="../../news_api.html#news_api.views.ArticleViewSet">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ArticleViewSet</span><span class="p">(</span><span class="n">viewsets</span><span class="o">.</span><span class="n">ModelViewSet</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    API endpoint for viewing and editing articles.</span>
+
+<span class="sd">    :param queryset: All articles</span>
+<span class="sd">    :type queryset: QuerySet</span>
+<span class="sd">    :param serializer_class: Serializer for Article data</span>
+<span class="sd">    :type serializer_class: ArticleSerializer</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">queryset</span> <span class="o">=</span> <span class="n">Article</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="n">serializer_class</span> <span class="o">=</span> <span class="n">ArticleSerializer</span>
+
+<div class="viewcode-block" id="ArticleViewSet.get_permissions">
+<a class="viewcode-back" href="../../news_api.html#news_api.views.ArticleViewSet.get_permissions">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_permissions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Assign permissions dynamically based on the action being taken.</span>
+
+<span class="sd">        :param self: The instance of the ArticleViewSet</span>
+<span class="sd">        :type self: ArticleViewSet</span>
+<span class="sd">        :return: List of permission instances for the current action</span>
+<span class="sd">        :rtype: list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">action</span> <span class="o">==</span> <span class="s2">&quot;create&quot;</span><span class="p">:</span>
+            <span class="c1"># Only journalists can create articles</span>
+            <span class="n">permission_classes</span> <span class="o">=</span> <span class="p">[</span><span class="n">permissions</span><span class="o">.</span><span class="n">IsAuthenticated</span><span class="p">,</span> <span class="n">IsJournalist</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">action</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;update&quot;</span><span class="p">,</span> <span class="s2">&quot;partial_update&quot;</span><span class="p">,</span> <span class="s2">&quot;destroy&quot;</span><span class="p">]:</span>
+            <span class="c1"># Only the author editors can edit or delete articles</span>
+            <span class="n">permission_classes</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">permissions</span><span class="o">.</span><span class="n">IsAuthenticated</span><span class="p">,</span>
+                <span class="n">IsAuthorOrReadOnly</span> <span class="o">|</span> <span class="n">IsEditor</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Everyone can view articles</span>
+            <span class="n">permission_classes</span> <span class="o">=</span> <span class="p">[</span><span class="n">permissions</span><span class="o">.</span><span class="n">AllowAny</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">permission</span><span class="p">()</span> <span class="k">for</span> <span class="n">permission</span> <span class="ow">in</span> <span class="n">permission_classes</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="ArticleViewSet.get_queryset">
+<a class="viewcode-back" href="../../news_api.html#news_api.views.ArticleViewSet.get_queryset">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Filter the article queryset based on the user&#39;s role.</span>
+
+<span class="sd">        :param self: The instance of the ArticleViewSet.</span>
+<span class="sd">        :type self: ArticleViewSet</span>
+<span class="sd">        :return: A filtered queryset of articles.</span>
+<span class="sd">        :rtype: QuerySet</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span>
+        <span class="k">if</span> <span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span> <span class="ow">and</span> <span class="p">(</span><span class="n">user</span><span class="o">.</span><span class="n">is_journalist</span> <span class="ow">or</span> <span class="n">user</span><span class="o">.</span><span class="n">is_editor</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">Article</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="c1"># Public/Readers only see approved content</span>
+        <span class="k">return</span> <span class="n">Article</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">is_approved</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ArticleViewSet.perform_create">
+<a class="viewcode-back" href="../../news_api.html#news_api.views.ArticleViewSet.perform_create">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">perform_create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">serializer</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Handles article creation logic, bypassing approval for</span>
+<span class="sd">        independent journalists.</span>
+
+<span class="sd">        :param self: The instance of the ArticleViewSet.</span>
+<span class="sd">        :type self: ArticleViewSet</span>
+<span class="sd">        :param serializer: The serializer instance containing the</span>
+<span class="sd">            validated article data.</span>
+<span class="sd">        :type serializer: ArticleSerializer</span>
+<span class="sd">        :return: None</span>
+<span class="sd">        :rtype: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span>
+        <span class="n">publisher</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">validated_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;publisher&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">user</span><span class="o">.</span><span class="n">is_journalist</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">publisher</span><span class="p">:</span>
+                <span class="c1"># Independent bypass: Auto-approve and publish now</span>
+                <span class="c1"># Also fulfills &#39;reader=None&#39; requirement</span>
+                <span class="n">serializer</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
+                    <span class="n">author</span><span class="o">=</span><span class="n">user</span><span class="p">,</span>
+                    <span class="n">reader</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">is_approved</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">published_at</span><span class="o">=</span><span class="n">timezone</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Needs editor approval</span>
+                <span class="n">serializer</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">author</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">reader</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">is_approved</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">user</span><span class="o">.</span><span class="n">is_reader</span><span class="p">:</span>
+            <span class="c1"># If a reader creates something, author is None or handled by model</span>
+            <span class="n">serializer</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">author</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reader</span><span class="o">=</span><span class="n">user</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Fallback for editors or other staff</span>
+            <span class="n">serializer</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">author</span><span class="o">=</span><span class="n">user</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ArticleViewSet.perform_update">
+<a class="viewcode-back" href="../../news_api.html#news_api.views.ArticleViewSet.perform_update">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">perform_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">serializer</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set published_at timestamp when an editor approves an article</span>
+<span class="sd">        and trigger email notifications.</span>
+
+<span class="sd">        :param self: The instance of the ArticleViewSet.</span>
+<span class="sd">        :type self: ArticleViewSet</span>
+<span class="sd">        :param serializer: The serializer instance containing the</span>
+<span class="sd">            validated update data.</span>
+<span class="sd">        :type serializer: ArticleSerializer</span>
+<span class="sd">        :return: None</span>
+<span class="sd">        :rtype: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check if &#39;is_approved&#39; is being sent in the update data</span>
+        <span class="n">is_approved_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;is_approved&quot;</span><span class="p">)</span>
+        <span class="c1"># Check if the article is being approved for the first time</span>
+        <span class="k">if</span> <span class="n">is_approved_data</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">serializer</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">is_approved</span><span class="p">:</span>
+            <span class="c1"># Save with the offical published timestamp</span>
+            <span class="c1"># when an editor approves the article</span>
+            <span class="n">instance</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
+                <span class="n">published_at</span><span class="o">=</span><span class="n">timezone</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span> <span class="n">is_approved</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Notification logic to alert subscribers when an</span>
+            <span class="c1"># article is approved</span>
+            <span class="n">subscribers</span> <span class="o">=</span> <span class="n">Subscription</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+                <span class="n">Q</span><span class="p">(</span><span class="n">publisher</span><span class="o">=</span><span class="n">instance</span><span class="o">.</span><span class="n">publisher</span><span class="p">)</span> <span class="o">|</span>
+                <span class="n">Q</span><span class="p">(</span><span class="n">journalist</span><span class="o">=</span><span class="n">instance</span><span class="o">.</span><span class="n">author</span><span class="p">)</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">select_related</span><span class="p">(</span><span class="s2">&quot;user&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Send real emails to all subscribers</span>
+            <span class="k">for</span> <span class="n">sub</span> <span class="ow">in</span> <span class="n">subscribers</span><span class="p">:</span>
+                <span class="n">subject</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;New Article Published: </span><span class="si">{</span><span class="n">instance</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">Hello </span><span class="si">{</span><span class="n">sub</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">username</span><span class="si">}</span><span class="s2">,</span>
+
+<span class="s2">A new article has been published that you might be interested in:</span>
+
+<span class="s2">Title: </span><span class="si">{</span><span class="n">instance</span><span class="o">.</span><span class="n">title</span><span class="si">}</span>
+<span class="s2">Author: </span><span class="si">{</span><span class="n">instance</span><span class="o">.</span><span class="n">author</span><span class="o">.</span><span class="n">username</span><span class="si">}</span>
+<span class="s2">Publisher: </span><span class="si">{</span><span class="n">instance</span><span class="o">.</span><span class="n">publisher</span><span class="o">.</span><span class="n">name</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">instance</span><span class="o">.</span><span class="n">publisher</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;Independent&#39;</span><span class="si">}</span>
+
+<span class="s2">Read it here: http://127.0.0.1:8000/article/</span><span class="si">{</span><span class="n">instance</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">/</span>
+
+<span class="s2">Best regards,</span>
+<span class="s2">NewsPortal Team</span>
+<span class="s2">                &quot;&quot;&quot;</span>
+
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">send_mail</span><span class="p">(</span>
+                        <span class="n">subject</span><span class="o">=</span><span class="n">subject</span><span class="p">,</span>
+                        <span class="n">message</span><span class="o">=</span><span class="n">message</span><span class="p">,</span>
+                        <span class="n">from_email</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">DEFAULT_FROM_EMAIL</span><span class="p">,</span>
+                        <span class="n">recipient_list</span><span class="o">=</span><span class="p">[</span><span class="n">sub</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">email</span><span class="p">],</span>
+                        <span class="n">fail_silently</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✓ Email sent to: </span><span class="si">{</span><span class="n">sub</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">email</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Failed to send email to </span><span class="si">{</span><span class="n">sub</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">email</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># For other updates, just save normally</span>
+            <span class="n">serializer</span><span class="o">.</span><span class="n">save</span><span class="p">()</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SubscriptionViewSet">
+<a class="viewcode-back" href="../../news_api.html#news_api.views.SubscriptionViewSet">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SubscriptionViewSet</span><span class="p">(</span><span class="n">viewsets</span><span class="o">.</span><span class="n">ModelViewSet</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    API endpoint for managing reader subscriptions.</span>
+
+<span class="sd">    :param serializer_class: The serializer used to parse</span>
+<span class="sd">        Subscription data.</span>
+<span class="sd">    :type serializer_class: SubscriptionSerializer</span>
+<span class="sd">    :param permission_classes: The permissions required to</span>
+<span class="sd">        access this view.</span>
+<span class="sd">    :type permission_classes: list</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">serializer_class</span> <span class="o">=</span> <span class="n">SubscriptionSerializer</span>
+    <span class="n">permission_classes</span> <span class="o">=</span> <span class="p">[</span><span class="n">permissions</span><span class="o">.</span><span class="n">IsAuthenticated</span><span class="p">]</span>
+
+<div class="viewcode-block" id="SubscriptionViewSet.get_queryset">
+<a class="viewcode-back" href="../../news_api.html#news_api.views.SubscriptionViewSet.get_queryset">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Restrict the subscription queryset to the logged-in user.</span>
+
+<span class="sd">        :param self: The instance of the SubscriptionViewSet.</span>
+<span class="sd">        :type self: SubscriptionViewSet</span>
+<span class="sd">        :return: A queryset of subscriptions belonging to the</span>
+<span class="sd">            logged-in user.</span>
+<span class="sd">        :rtype: QuerySet</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Return subscriptions for the logged-in user</span>
+        <span class="k">return</span> <span class="n">Subscription</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SubscriptionViewSet.perform_create">
+<a class="viewcode-back" href="../../news_api.html#news_api.views.SubscriptionViewSet.perform_create">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">perform_create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">serializer</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Handle subscription creation and prevent staff from</span>
+<span class="sd">        subscribing.</span>
+
+<span class="sd">        :param self: The instance of the SubscriptionViewSet.</span>
+<span class="sd">        :type self: SubscriptionViewSet</span>
+<span class="sd">        :param serializer: The serializer instance containing the</span>
+<span class="sd">            validated subscription data.</span>
+<span class="sd">        :type serializer: SubscriptionSerializer</span>
+<span class="sd">        :raise PermissionDenied: If the user is a journalist or editor.</span>
+<span class="sd">        :return: None</span>
+<span class="sd">        :rtype: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># If user is journalist/editor, they cannot subscribe to others</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_journalist</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_editor</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PermissionDenied</span><span class="p">(</span>
+                <span class="s2">&quot;Staff members cannot subscribe to publishers.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">serializer</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="home_view">
+<a class="viewcode-back" href="../../news_api.html#news_api.views.home_view">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">home_view</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Render the homepage.</span>
+
+<span class="sd">    :param request: The incoming HTTP request object.</span>
+<span class="sd">    :type request: django.http.HttpRequest</span>
+<span class="sd">    :return: The rendered homepage template.</span>
+<span class="sd">    :rtype: django.http.HttpResponse</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s2">&quot;news_api/home.html&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="article_detail_view">
+<a class="viewcode-back" href="../../news_api.html#news_api.views.article_detail_view">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">article_detail_view</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">pk</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Render the article detail page.</span>
+
+<span class="sd">    :param request: The incoming HTTP request object.</span>
+<span class="sd">    :type request: django.http.HttpRequest</span>
+<span class="sd">    :param pk: The primary key (ID) of the article to display.</span>
+<span class="sd">    :type pk: int</span>
+<span class="sd">    :return: The rendered article detail template with the article</span>
+<span class="sd">             ID in context.</span>
+<span class="sd">    :rtype: django.http.HttpResponse</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Pass the &#39;pk&#39; (article ID) to the template for client-side fetching</span>
+    <span class="n">context</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;article_id&quot;</span><span class="p">:</span> <span class="n">pk</span><span class="p">}</span>
+    <span class="k">return</span> <span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s2">&quot;news_api/article_detail.html&quot;</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="login_view">
+<a class="viewcode-back" href="../../news_api.html#news_api.views.login_view">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">login_view</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Handle user login via standard form submission.</span>
+
+<span class="sd">    :param request: The incoming HTTP request containing</span>
+<span class="sd">        login credentials.</span>
+<span class="sd">    :type request: django.http.HttpRequest</span>
+<span class="sd">    :return: Redirect to home on successful login or re-render</span>
+<span class="sd">        the login page with an error message on failure.</span>
+<span class="sd">    :rtype: django.http.HttpResponse</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;POST&quot;</span><span class="p">:</span>
+        <span class="n">username</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">[</span><span class="s2">&quot;username&quot;</span><span class="p">]</span>
+        <span class="n">password</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">[</span><span class="s2">&quot;password&quot;</span><span class="p">]</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">authenticate</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">password</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">login</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">user</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s2">&quot;home&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">render</span><span class="p">(</span>
+                <span class="n">request</span><span class="p">,</span>
+                <span class="s2">&quot;news_api/login.html&quot;</span><span class="p">,</span>
+                <span class="p">{</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Invalid credentials&quot;</span><span class="p">},</span>
+            <span class="p">)</span>
+    <span class="k">return</span> <span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s2">&quot;news_api/login.html&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="logout_view">
+<a class="viewcode-back" href="../../news_api.html#news_api.views.logout_view">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">logout_view</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Handle user logout and clear session data.</span>
+
+<span class="sd">    :param request: The incoming HTTP request object.</span>
+<span class="sd">    :type request: django.http.HttpRequest</span>
+<span class="sd">    :return: Redirect to the homepage after logging out.</span>
+<span class="sd">    :rtype: django.http.HttpResponse</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logout</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s2">&quot;home&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="create_article_view">
+<a class="viewcode-back" href="../../news_api.html#news_api.views.create_article_view">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_article_view</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Render the article creation page for journalists.</span>
+
+<span class="sd">    :param request: The incoming HTTP request object.</span>
+<span class="sd">    :type request: django.http.HttpRequest</span>
+<span class="sd">    :return: The rendered article creation template.</span>
+<span class="sd">    :rtype: django.http.HttpResponse</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s2">&quot;news_api/create_article.html&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="editor_dashboard_view">
+<a class="viewcode-back" href="../../news_api.html#news_api.views.editor_dashboard_view">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">editor_dashboard_view</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Render the editor dashboard for managing articles.</span>
+
+<span class="sd">    :param request: The incoming HTTP request object.</span>
+<span class="sd">    :type request: django.http.HttpRequest</span>
+<span class="sd">    :return: The rendered editor dashboard template or a redirect</span>
+<span class="sd">        to the homepage if the user is not an editor.</span>
+<span class="sd">    :rtype: django.http.HttpResponse</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Security check to ensure only editors can access this view</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_editor</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s2">&quot;home&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s2">&quot;news_api/editor_dashboard.html&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="my_feed_view">
+<a class="viewcode-back" href="../../news_api.html#news_api.views.my_feed_view">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">my_feed_view</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Render the personalized feed for readers and clean up staff</span>
+<span class="sd">    subscriptions.</span>
+
+<span class="sd">    :param request: The incoming HTTP request object.</span>
+<span class="sd">    :type request: django.http.HttpRequest</span>
+<span class="sd">    :return: The rendered feed template or a redirect to login if</span>
+<span class="sd">        the user is not authenticated.</span>
+<span class="sd">    :rtype: django.http.HttpResponse</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s2">&quot;login&quot;</span><span class="p">)</span>
+
+        <span class="c1"># If the user is a journalist or editor,</span>
+        <span class="c1"># clear their subscriptions to avoid confusion</span>
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_journalist</span> <span class="ow">or</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_editor</span><span class="p">:</span>
+        <span class="n">Subscription</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">)</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">render</span><span class="p">(</span>
+            <span class="n">request</span><span class="p">,</span>
+            <span class="s2">&quot;news_api/my_feed.html&quot;</span><span class="p">,</span>
+            <span class="p">{</span><span class="s2">&quot;error_message&quot;</span><span class="p">:</span> <span class="s2">&quot;Staff members do not have a personal feed.&quot;</span><span class="p">},</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s2">&quot;news_api/my_feed.html&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="publishers_list_view">
+<a class="viewcode-back" href="../../news_api.html#news_api.views.publishers_list_view">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">publishers_list_view</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Render a list of publishers for readers to subscribe to.</span>
+
+<span class="sd">    :param request: The incoming HTTP request object.</span>
+<span class="sd">    :type request: django.http.HttpRequest</span>
+<span class="sd">    :return: The rendered publishers list template.</span>
+<span class="sd">    :rtype: django.http.HttpResponse</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s2">&quot;news_api/publishers_list.html&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="edit_article_view">
+<a class="viewcode-back" href="../../news_api.html#news_api.views.edit_article_view">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">edit_article_view</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">pk</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Render the article editing page for journalists.</span>
+
+<span class="sd">    :param request: The incoming HTTP request object.</span>
+<span class="sd">    :type request: django.http.HttpRequest</span>
+<span class="sd">    :param pk: The primary key (ID) of the article to edit.</span>
+<span class="sd">    :type pk: int</span>
+<span class="sd">    :return: The rendered article editing template with context.</span>
+<span class="sd">    :rtype: django.http.HttpResponse</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s2">&quot;news_api/edit_article.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;pk&quot;</span><span class="p">:</span> <span class="n">pk</span><span class="p">})</span></div>
+
+
+
+<div class="viewcode-block" id="my_stories_view">
+<a class="viewcode-back" href="../../news_api.html#news_api.views.my_stories_view">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">my_stories_view</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Render a list of the journalist&#39;s own articles.</span>
+
+<span class="sd">    :param request: The incoming HTTP request object.</span>
+<span class="sd">    :type request: django.http.HttpRequest</span>
+<span class="sd">    :return: The rendered my stories template.</span>
+<span class="sd">    :rtype: django.http.HttpResponse</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s2">&quot;news_api/my_stories.html&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="signup_view">
+<a class="viewcode-back" href="../../news_api.html#news_api.views.signup_view">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">signup_view</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Handle user registration with dynamic role selection.</span>
+
+<span class="sd">    :param request: The incoming HTTP request object containing</span>
+<span class="sd">        registration data.</span>
+<span class="sd">    :type request: django.http.HttpRequest</span>
+<span class="sd">    :return: Redirect to home on success, or the signup template</span>
+<span class="sd">        on failure.</span>
+<span class="sd">    :rtype: django.http.HttpResponse</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;POST&quot;</span><span class="p">:</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">SignUpForm</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+            <span class="n">user</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">commit</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">role</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;role&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Dynamically assign the role based on the dropdown selection</span>
+            <span class="n">user</span><span class="o">.</span><span class="n">is_reader</span> <span class="o">=</span> <span class="n">role</span> <span class="o">==</span> <span class="s2">&quot;reader&quot;</span>
+            <span class="n">user</span><span class="o">.</span><span class="n">is_journalist</span> <span class="o">=</span> <span class="n">role</span> <span class="o">==</span> <span class="s2">&quot;journalist&quot;</span>
+            <span class="n">user</span><span class="o">.</span><span class="n">is_editor</span> <span class="o">=</span> <span class="n">role</span> <span class="o">==</span> <span class="s2">&quot;editor&quot;</span>
+
+            <span class="n">user</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            <span class="n">login</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">user</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s2">&quot;home&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">SignUpForm</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s2">&quot;news_api/signup.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;form&quot;</span><span class="p">:</span> <span class="n">form</span><span class="p">})</span></div>
+
+
+
+<div class="viewcode-block" id="add_publisher_view">
+<a class="viewcode-back" href="../../news_api.html#news_api.views.add_publisher_view">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_publisher_view</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Render the page for editors to add new publishers.</span>
+
+<span class="sd">    :param request: The incoming HTTP request object containing</span>
+<span class="sd">        publisher data.</span>
+<span class="sd">    :type request: django.http.HttpRequest</span>
+<span class="sd">    :return: Redirect to editor dashboard on success, or the add</span>
+<span class="sd">        publisher template on failure.</span>
+<span class="sd">    :rtype: django.http.HttpResponse</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Security check to ensure only editors can access this view</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_editor</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s2">&quot;home&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;POST&quot;</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;publisher_name&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">name</span><span class="p">:</span>
+            <span class="n">Publisher</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span>
+                <span class="n">request</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Publisher &quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">&quot; added successfully!&#39;</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s2">&quot;editor-dashboard&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s2">&quot;news_api/add_publisher.html&quot;</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Orlando Gonzales.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
